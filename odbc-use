@@ -1,0 +1,53 @@
+#! /usr/bin/env bash
+
+# set -o errexit # not sure why this causes failure
+set -o nounset
+
+DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share/}"
+CONFIG_PATH="$DATA_HOME/odbc-use"
+
+read -r -d '' USAGE <<- EOM
+odbc-use v1.0
+
+Swap ~/.odbc.ini
+
+You should place one DSN profile per file in XDG_DATA_HOME/odbc-use/DSN.ini.
+When odbc-use is called, it will copy the profile into ~/.odbc.ini using the
+filename, which should match the DSN.
+
+Args:
+  dsn The DSN name, which should match the file name
+
+Exit codes:
+  0 = ok
+  10 = no dsn passed
+  20 = invalid dsn
+EOM
+
+# ================================== Main =============================================
+
+# guard for missing dsn
+if [ $# -eq 0 ]; then
+    echo "$USAGE"
+    printf "\n>>>No dsn supplied\n"
+    exit 10
+fi
+
+# guard for help
+if [ "$1" = "-h" ]; then
+    echo "$USAGE"
+    exit 0
+fi
+
+INI_FILE_NAME="$1"
+STAMP=$(($(date +%s%N)/1000000))
+touch "$HOME/.odbc.ini"
+cp "$HOME/.odbc.ini" "/tmp/odbc_$STAMP.ini"
+cp "$CONFIG_PATH/$INI_FILE_NAME" "$HOME/.odbc.ini"
+if [ $? -eq 1 ]; then
+  exit 20
+else
+  echo "=============================================================================="
+  cat "$HOME/.odbc.ini"
+  echo "=============================================================================="
+fi

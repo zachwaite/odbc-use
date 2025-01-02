@@ -1,0 +1,20 @@
+# inspired by
+# https://stackoverflow.com/questions/62979947/how-to-autocomplete-files-under-specific-directory
+
+_odbc_use()
+{
+    local DATA_DIR=$HOME/.local/share/odbc-use/
+    local cmd=$1 cur=$2 pre=$3
+    local arr i file
+
+    arr=( $( cd "$DATA_DIR" && compgen -f -- "$cur" ) )
+    COMPREPLY=()
+    for ((i = 0; i < ${#arr[@]}; ++i)); do
+        file=${arr[i]}
+        if [[ -d $DATA_DIR/$file ]]; then
+            file=$file/
+        fi
+        COMPREPLY[i]=$file
+    done
+}
+complete -F _odbc_use -o nospace odbc-use
