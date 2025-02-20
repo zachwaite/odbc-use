@@ -16,7 +16,7 @@ When odbc-use is called, it will copy the profile into ~/.odbc.ini using the
 filename, which should match the DSN.
 
 Args:
-  dsn The DSN name, which should match the file name
+  dsn The DSN name, which should match the file name, or NONE to delete ~/.odbc.ini
 
 Exit codes:
   0 = ok
@@ -40,6 +40,13 @@ if [ "$1" = "-h" ]; then
 fi
 
 INI_FILE_NAME="$1"
+
+if [ $INI_FILE_NAME == "NONE" ]; then
+  rm "$HOME/.odbc.ini"
+  echo "Removed .odbc.ini"
+  exit 0
+fi
+
 STAMP=$(($(date +%s%N)/1000000))
 touch "$HOME/.odbc.ini"
 cp "$HOME/.odbc.ini" "/tmp/odbc_$STAMP.ini"
@@ -48,6 +55,6 @@ if [ $? -eq 1 ]; then
   exit 20
 else
   echo "=============================================================================="
-  cat "$HOME/.odbc.ini"
+  cat "$HOME/.odbc.ini" | grep -v 'Password'
   echo "=============================================================================="
 fi
